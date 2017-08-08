@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 The main driver for Caysen, a small, example roguelike village that is used
 to explore artificial intelligence algorithms that emphasize emotional
