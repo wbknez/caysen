@@ -157,8 +157,8 @@ class DisplaySubSystem(SubSystem):
             tdl.set_font(self.font, greyscale, alt_layout)
 
         self.back = tdl.Console(self.width, self.height)
-        self.console = tdl.init(self.width, self.height, title = self.title,
-                                fullscreen = self.fullscreen)
+        self.console = tdl.init(self.width, self.height, title=self.title,
+                                fullscreen=self.fullscreen)
         tdl.set_fps(self.fps)
         return self.console is not None
 
@@ -181,3 +181,42 @@ class DisplaySubSystem(SubSystem):
         self.console.blit(self.back, 0, 0, self.width, self.height, 0, 0)
         tdl.flush()
         return not tdl.event.is_window_closed()
+
+
+class InputSubSystem(SubSystem):
+    """
+    An implementation of SubSystem that manages the event queue of keyboard
+    and mouse input events and responds to each by either calling a
+    user-created callback function, if bound, otherwise discarding it.
+
+    Attributes::
+
+    """
+
+    def __init__(self):
+        super().__init__("input")
+
+    def get_dependencies(self):
+        return {"init": ["display"], "update": []}
+
+    def initialize(self, params):
+        pass
+
+    def shutdown(self):
+        pass
+
+    def update(self, delta_time):
+        for event in tdl.event.get():
+            if event.type == 'KEYDOWN':
+                pass
+            elif event.type == 'KEYUP':
+                pass
+            elif event.type == 'MOUSEDOWN':
+                pass
+            elif event.type == 'MOUSEMOTION':
+                pass
+            elif event.type == 'MOUSEUP':
+                pass
+            elif event.type == 'QUIT':
+                return False
+        return True
