@@ -17,10 +17,10 @@ class SystemTimer:
     wall-clock time, as the measurements are system dependent.
 
     Attributes:
-        current_time (float): The most recently requested time in miliseconds.
-        delta_time (float): The amount of time that elapsed between the
-        most current requested time and the last one.
-        last_time (float): The last requested time in milliseconds.
+        current_time (float): The most recently requested time in seconds.
+        delta_time (float): The amount of time in seconds that elapsed
+        between the most current requested time and the last one.
+        last_time (float): The last requested time in seconds.
     """
 
     def __init__(self):
@@ -63,9 +63,9 @@ class Stopwatch:
         repeating (bool): Whether or not the stopwatch should reset itself
         and continue to call the callback after the target time has been
         reached.
-        start_time (float): The time (in milliseconds) since epoch at which
-        the stopwatch starting tracking time.
-        target_time (float): The amount of time (in milliseconds) that the
+        start_time (float): The time (in seconds) since epoch at which the
+        stopwatch starting tracking time.
+        target_time (float): The amount of time (in seconds) that the
         stopwatch should run for.
     """
 
