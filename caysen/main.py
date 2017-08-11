@@ -7,6 +7,8 @@ awareness and social cognition.
 """
 import sys
 
+from caysen.initializer import create_kernel, get_combined_params
+
 
 def main():
     """
@@ -14,7 +16,12 @@ def main():
 
     :return: An exit code.
     """
-    pass
+    params = get_combined_params('data/config.ini')
+    kernel = create_kernel()
+
+    kernel.initialize(params)
+    kernel.run()
+    kernel.shutdown()
 
 
 if __name__ == "__main__":
