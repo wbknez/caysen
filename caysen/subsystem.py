@@ -141,7 +141,7 @@ class Kernel:
         :return:
         """
         if alternate_name is None:
-            other_name = system.name
+            alternate_name = system.name
         self.subsystems[alternate_name] = system
 
     def initialize(self, params):
