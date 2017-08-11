@@ -8,8 +8,13 @@ import time
 
 class SystemTimer:
     """
-    Represents a simple mechanism for measuring the amount of wallclock time
-    in milliseconds that has elapsed during game updates.
+    Represents a simple mechanism for measuring the amount of system time in
+    milliseconds that has elapsed between game updates.
+
+    In particular, this timer uses the current system's high performance
+    timer to measure time in small, relativistic intervals.  As such,
+    this timer's time values cannot be used or understood in conjunction with
+    wall-clock time, as the measurements are system dependent.
 
     Attributes:
         current_time (float): The most recently requested time in miliseconds.
@@ -33,7 +38,7 @@ class SystemTimer:
         """
         Begins tracking the current time.
         """
-        self.current_time = time.time()
+        self.current_time = time.perf_counter()
 
     def update(self):
         """
@@ -43,7 +48,7 @@ class SystemTimer:
         the last time this function was called.
         """
         self.last_time = self.current_time
-        self.current_time = time.time()
+        self.current_time = time.perf_counter()
         self.delta_time = self.current_time - self.last_time
 
 
@@ -83,7 +88,7 @@ class Stopwatch:
             self.target_time = target_time
 
         self.is_running = True
-        self.start_time = time.time()
+        self.start_time = time.perf_counter()
 
     def update(self):
         """
@@ -102,7 +107,7 @@ class Stopwatch:
         if not self.is_running:
             raise ValueError('The stopwatch is not running.')
 
-        delta_time = time.time() - self.start_time
+        delta_time = time.perf_counter() - self.start_time
 
         if delta_time >= self.target_time:
             if self.callback is not None:
