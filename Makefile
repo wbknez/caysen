@@ -4,7 +4,7 @@ init:
 	pip install -r requirements.txt --user
 
 run:
-	python3 caysen/main.py
+	@ python3 -m caysen.main
 
 test:
 	nose2 tests
