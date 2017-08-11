@@ -135,16 +135,43 @@ class ActionMap:
         for callback in self.actions[action]:
             callback(args)
 
+    def is_bound(self, action):
+        """
+        Returns whether or not the specified action is bound to at least one
+        valid callback.
+
+        :param action: The action to search for.
+        :return: Whether or not the action has at least one valid callback
+        associated with it.
+        """
+        return action in self.actions and len(self.actions[action]) > 0
+
+    def is_bound_to(self, action, callback):
+        """
+        Returns whether or not the specified callback is in the list of
+        callbacks bound to the specified action.
+
+        :param action: The action to search for.
+        :param callback: The callback to check.
+        :return: Whether or not the callback is bound to the action.
+        """
+        return action in self.actions and callback in self.actions[action]
+
     def unbind(self, action, callback):
         """
         Unbinds the specified callback from being associated with the
         specified action.
+
+        If this action results in the specified action having no valid
+        callbacks bound to it, it is removed completely from this action map.
 
         :param action: The action to unbind the callback from.
         :param callback: The callback to unbind.
         """
         if action in self.actions and callback in self.actions[action]:
             self.actions[action].remove(callback)
+            if len(self.actions[action]) == 0:
+                del self.actions[action]
 
     def unbind_all(self, action):
         """
@@ -153,4 +180,4 @@ class ActionMap:
         :param action: The action to unbind.
         """
         if action in self.actions:
-            self.actions[action].clear()
+            del self.actions[action]
