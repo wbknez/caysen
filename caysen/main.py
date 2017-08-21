@@ -7,7 +7,7 @@ awareness and social cognition.
 """
 import sys
 
-from caysen.initializer import create_kernel, get_combined_params
+from caysen.config import create_kernel, get_combined_params
 
 
 def main():
