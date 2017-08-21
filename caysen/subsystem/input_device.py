@@ -6,6 +6,36 @@ import enum
 
 
 @enum.unique
+class ActionState(enum.Enum):
+    """
+    Represents the different types of activation states an input action may
+    have.
+    """
+
+    """
+    Represents an action that has been pressed "down" or otherwise activated.
+    """
+    Down = 'down'
+
+    """
+    Represents an action that is being kept in the "down" state repeatedly 
+    over a period of time.
+    """
+    Held = 'held'
+
+    """
+    Represents an action whose movement component has changed in some way.
+    """
+    Motion = 'motion'
+
+    """
+    Represents an action that has been released and is now "up" or otherwise 
+    free.
+    """
+    Up = 'up'
+
+
+@enum.unique
 class MouseButton(enum.Enum):
     """
     Represents the different types of mouse buttons that can generate an
