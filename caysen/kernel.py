@@ -119,7 +119,8 @@ def _get_execution_order(for_state, subsystems):
     :return:
     """
     tree = []
-    deps = _get_dependencies(for_state, subsystems)
+    deps = dict((k, set(v)) for k, v in
+                _get_dependencies(for_state, subsystems).items())
 
     while deps:
         # Dependencies that are not named in the original dict.
