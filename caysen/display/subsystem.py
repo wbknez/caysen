@@ -38,7 +38,7 @@ class DisplaySubSystem(SubSystem):
         self.width = 0
 
     def get_dependencies(self):
-        return {"init": [], "update": ["game", "input"], "shutdown": ["game"]}
+        return {"init": [], "update": [], "shutdown": []}
 
     def initialize(self, params, kernel):
         self.fullscreen = params.get("fullscreen", False)
@@ -71,7 +71,7 @@ class DisplaySubSystem(SubSystem):
     def update(self, delta_time):
         self.root.blit(self.canvas.console, 0, 0, self.width, self.height, 0, 0)
         tdl.flush()
-        return tdl.event.is_window_closed()
+        return not tdl.event.is_window_closed()
 
     def shutdown(self):
         self.canvas.dispose()
