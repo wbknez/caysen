@@ -13,6 +13,8 @@ class Canvas:
     Attributes:
         name (str): The unique name for the canvas.
         console (tdl.Console): The backing TDL console.
+        height (int): The height of the canvas in tiles.
+        width (int): The width of the canvas in tiles.
     """
 
     def __init__(self, name, width, height):
@@ -25,6 +27,8 @@ class Canvas:
         """
         self.name = name
         self.console = tdl.Console(width, height)
+        self.height = height
+        self.width = width
 
     def blit(self, image, x=0, y=0):
         """
