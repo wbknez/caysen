@@ -166,7 +166,7 @@ class Kernel:
         self.subsystems = dict()
         self.timer = SystemTimer()
 
-    def add(self, subsystem, alternate_name=None):
+    def add(self, subsystem, name=None):
         """
         Adds the specified subsystem to this kernel with the specified
         alternate name.
@@ -175,14 +175,14 @@ class Kernel:
         name will be used instead.
 
         :param subsystem: The subsystem to add.
-        :param alternate_name: An alternate name for the subsystem; this
-        allows two or more subsystems of a specific type to be added to the
-        kernel (if for some reason that is desirable).  If no alternate name
-        is given, the subsystem's name is used instead.
+        :param name: An alternate name for the subsystem; this allows two or
+        more subsystems of a specific type to be added to the kernel (if for
+        some reason that is desirable).  If no alternate name is given,
+        the subsystem's name is used instead.
         """
-        if alternate_name is None:
-            alternate_name = subsystem.name
-        self.subsystems[alternate_name] = subsystem
+        if name is None:
+            name = subsystem.name
+        self.subsystems[name] = subsystem
 
     def initialize(self, params):
         """
