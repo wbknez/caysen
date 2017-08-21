@@ -13,13 +13,13 @@ class AudioSubSystem(SubSystem):
         super().__init__("audio")
 
     def get_dependencies(self):
-        pass
+        return {"init": [], "update": ["game"], "shutdown": []}
 
     def initialize(self, params, kernel):
-        pass
+        return True
 
     def shutdown(self):
-        pass
+        return True
 
     def update(self, delta_time):
-        pass
+        return True

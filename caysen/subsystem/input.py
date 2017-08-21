@@ -1,6 +1,8 @@
 """
 Contains the implementation of the input framework using TDL.
 """
+import tdl
+
 from caysen.kernel import SubSystem
 
 
@@ -161,13 +163,16 @@ class InputSubSystem(SubSystem):
         super().__init__("input")
 
     def get_dependencies(self):
-        pass
+        return {"init": ["display"], "update": ["game"], "shutdown": ["game"]}
 
     def initialize(self, params, kernel):
-        pass
+        return True
 
     def shutdown(self):
-        pass
+        return True
 
     def update(self, delta_time):
-        pass
+        for event in tdl.event.get():
+            if event.type == 'Quit':
+                return False
+        return True

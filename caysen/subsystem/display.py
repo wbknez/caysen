@@ -183,7 +183,7 @@ class DisplaySubSystem(SubSystem):
         self.width = 0
 
     def get_dependencies(self):
-        return {"init": [], "update": [], "shutdown": []}
+        return {"init": [], "update": ["game", "input"], "shutdown": ["game"]}
 
     def initialize(self, params, kernel):
         self.fullscreen = params.get("fullscreen", False)

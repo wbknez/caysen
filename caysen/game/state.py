@@ -13,13 +13,13 @@ class GameSubSystem(SubSystem):
         super().__init__("game")
 
     def get_dependencies(self):
-        pass
+        return {"init": [], "update": [], "shutdown": []}
 
     def initialize(self, params, kernel):
-        pass
+        return True
 
     def shutdown(self):
-        pass
+        return True
 
     def update(self, delta_time):
-        pass
+        return True
