@@ -48,10 +48,12 @@ class GameState(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def initialize(self):
+    def initialize(self, stack):
         """
         Creates or otherwise initializes any resources this game state needs
         in order to operate effectively.
+
+        :param stack: The game state stack that requested the initialization.
         """
         pass
 
@@ -78,18 +80,74 @@ class GameState(metaclass=ABCMeta):
 
 class GameStateStack:
     """
-    Represents
+    Represents a mechanism to manage game states and switch between them as
+    necessary.
+
+    The game state stack represents a flattened tree view of a game's state
+    any given point in time.  In particular, the game state stack handles two
+    pivotal operations: horizontal and vertical state transitions.  Vertical
+    transitions occur when a parent state pushes a child onto the state
+    stack, thereby including both in the draw and potentially the update
+    cycles.  This is useful for layering states on top of one another,
+    such as an options menu overlaid on a running game map.  There is a
+    second type of vertical transition whereby the child pops itself off the
+    stack, returning control flow to its parent.  This is useful for
+    demarcating different types of states (i.e. "menu" vs. "in-game") that
+    the user should be interacting with.  Vertical transitions of either type
+    are accomplished by simply using the "push" and "pop" functions of the game
+    state stack.
+
+    In contrast, horizontal transitions occur when one state pops itself off
+    the stack before applying another, effectively replacing it.  This is
+    useful for explicitly switching between states, such as different menus
+    on a character screen.  Because "switch" has programmatic connotations,
+    horizontal transitions are accomplished using the "slide" function,
+    which will take care of calling the appropriate "enter" and "exit"
+    functions for each state.  A horizontal transition is essentially a
+    re-parenting operation.
 
     The game subsystem explicitly checks whether or not there are any states
     to update (and therefore draw) to decide when the game is over and the
-    application should terminate.  As such,
+    application should terminate.  As such, while the "quit" function serves
+    as a way to exit the application, there is otherwise no explicit "kill
+    all" type function.
+
+    Finally, please note that this game state stack implementation is
+    singular in both nature and purpose.  That is, an enterprising programmer
+    might create a state stack that is a collection of stacks, essentially
+    allowing multiple state stacks to run simultaneously.  Whether or not
+    this might be beneficial is for the reader to decide, but is not used
+    here.  However, more importantly, this game state stack does not allow
+    in-place swapping All operations occur at the head of the stack,
+    never anywhere else.  Thus, it is impossible to, for example,
+    swap parents and still preserve the order of any children.  Again,
+    this might be useful in some circumstances but this project has nome such.
 
     Attributes:
-        stack (list):
+        stack (list): The current state stack represented as a list.
+        states (dict): A dictionary of game states associated by name.
     """
 
     def __init__(self):
         self.stack = list()
+        self.states = dict()
+
+    def add(self, state, name=None):
+        """
+
+        :param state:
+        :param name:
+        """
+        if name is None:
+            name = state.name
+        self.states[name] = state
+
+    def dispose(self):
+        """
+        Releases all of the resources held
+        """
+        for state in self.states.values():
+            state.dispose()
 
     def pop(self, state):
         """
@@ -103,16 +161,21 @@ class GameStateStack:
         prev = self.stack.pop(-1)
         prev.exit()
 
-    def push(self, state):
+    def push(self, state, call_parent=True):
         """
 
+
         :param state:
+        :param call_parent:
         """
-        pass
+        if call_parent:
+            self.stack[-1].exit()
+        self.stack.append(state)
+        state.enter()
 
     def quit(self):
         """
-        Removes any game states from this game state stack.
+        Removes all game states from this game state stack.
 
         As stated earlier, because the game subsystem checks to see if any
         game states are on the stack in order to determine exit status,
@@ -120,19 +183,38 @@ class GameStateStack:
         """
         self.stack.clear()
 
-    def slide(self, current, next):
+    def remove(self, name):
+        """
+        Removes the game state with the specified name from this game state
+        stack.
+
+        :param name: The name of the game state to remove.
+        """
+        if self.states[name]:
+            del self.states[name]
+
+    def slide(self, current_state, next_state):
         """
 
-        :param current:
-        :param next:
-        :return:
+
+        :param current_state: The current state to exit.
+        :param next_state: The new state to enter.
         """
-        pass
+        self.pop(current_state)
+        self.push(next_state, False)
 
     def update(self, delta_time):
         """
+        Updates every game state in this game state stack, starting with the
+        "top", or head, of the stack.
 
-        :param delta_time:
+        In order to allow for modality, updates occur as a reversed iteration
+        over the current state stack.  This allows top-level game states to
+        deny those beneath them the ability to update if such behavior is
+        desired.
+
+        :param delta_time: The amount of time in seconds that has passed
+        since the previous update.
         """
         for state in reversed(self.stack):
             if not state.update(delta_time):
