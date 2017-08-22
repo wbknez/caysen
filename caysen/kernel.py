@@ -176,9 +176,8 @@ class Kernel:
 
         :param subsystem: The subsystem to add.
         :param name: An alternate name for the subsystem; this allows two or
-        more subsystems of a specific type to be added to the kernel (if for
-        some reason that is desirable).  If no alternate name is given,
-        the subsystem's name is used instead.
+        more subsystems of a specific type to be added to thekernel (if for some reason that is desirable).  If no alternate name
+        is given, the subsystem's name is used instead.
         """
         if name is None:
             name = subsystem.name
