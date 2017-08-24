@@ -268,8 +268,8 @@ class Kernel:
                     subsystem.update(self.timer.delta_time)
                 except AppExitSignal:
                     logging.info("Caught application exit request from "
-                                 "<i>%s</i>; proceeding to shutdown." %
-                                 subsystem.name)
+                                 "<i>%s</i>; cleanly exiting kernel update "
+                                 "loop." % subsystem.name)
                     self.is_running = False
                     raise
                 except SubSystemError:
