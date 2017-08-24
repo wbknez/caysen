@@ -2,9 +2,27 @@
 Contains all major subsystems (audio, input, and video) as well as a simple
 kernel to manage them.
 """
+import logging
 from abc import ABCMeta, abstractmethod
 
+
 from caysen.util.timers import SystemTimer
+
+
+class AppExitSignal(Exception):
+    """
+    Represents an exception that is thrown by a subsystem to indicate that
+    the application should exit.
+    """
+    pass
+
+
+class SubSystemError(Exception):
+    """
+    Represents an exception that is thrown by a subsystem that has
+    encountered some kind of fatal error.
+    """
+    pass
 
 
 class SubSystem(metaclass=ABCMeta):
@@ -46,7 +64,8 @@ class SubSystem(metaclass=ABCMeta):
         :param kernel: The kernel that contains other subsystems this one
         might need for initialization.  This also lets this subsystem hold a
         reference to dependencies.
-        :return: False if unsuccessful, otherwise True.
+        :raise SubSystemError: If there was a problem with a subsystem's
+        initialization.
         """
         pass
 
@@ -59,7 +78,8 @@ class SubSystem(metaclass=ABCMeta):
         Like 'initialize', the return value for this function is never
         actually used.  It is included, however, for completeness.
 
-        :return: False if unsuccessful, otherwise True.
+        :raise SubSystemError: If there was a problem with a subsystem's
+        shutdown.
         """
         pass
 
@@ -70,7 +90,8 @@ class SubSystem(metaclass=ABCMeta):
 
         :param delta_time: The amount of time in seconds that has passed
         since the previous update.
-        :return: False if unsuccessful, otherwise True.
+        :raise SubSystemError: If there was a problem with a subsystem's
+        update.
         """
         pass
 
@@ -189,10 +210,22 @@ class Kernel:
         dictionary of user-modified parameters.
 
         :param params: A dictionary of user-modified parameters.
+        :raise SubSystemError: If a subsystem encountered a critical error
+        during initialization.
+        :raise ValueError: If the kernel is already running.
         """
+        if self.is_running:
+            raise ValueError('Kernel is already running.')
+
         exec_order = _get_execution_order('init', self.subsystems)
         for subsystem in exec_order:
-            subsystem.initialize(params, self)
+            try:
+                subsystem.initialize(params, self)
+            except SubSystemError:
+                logging.critical("Caught subsystem initialization error from "
+                                 "<i>%s</i>; notifying the caller." %
+                                 subsystem.name)
+                raise
 
     def remove(self, name):
         """
@@ -211,6 +244,10 @@ class Kernel:
         The loop is stopped if any subsystem's update method returns False or if
         the kernel flag is signaled.
 
+        :raise AppExitSignal: If a subsystem has received a user event that
+        signals the application should close.
+        :raise SubSystemError: If a subsystem encounters a critical error
+        while updating.
         :raise ValueError: If the kernel is already running or there are no
         subsystems available for use.
         """
@@ -227,14 +264,37 @@ class Kernel:
         while self.is_running:
             self.timer.update()
             for subsystem in exec_order:
-                if not subsystem.update(self.timer.delta_time):
+                try:
+                    subsystem.update(self.timer.delta_time)
+                except AppExitSignal:
+                    logging.info("Caught application exit request from "
+                                 "<i>%s</i>; proceeding to shutdown." %
+                                 subsystem.name)
                     self.is_running = False
-                    break
+                    raise
+                except SubSystemError:
+                    logging.critical("Caught subsystem error from <i>%s</i>; "
+                                     "notifying the caller." % subsystem.name)
+                    self.is_running = False
+                    raise
 
     def shutdown(self):
         """
         Shutdowns all of the subsystems in this kernel individually.
+
+        Unlike "initialize" and "update", this function does not stop when a
+        subsystem raises an exception.  Since this function is always called
+        before the application exits, there is thus no point in doing so.
+
+        :return: Whether or not the shutdown process completed without error.
         """
         exec_order = _get_execution_order('shutdown', self.subsystems)
+        had_error = False
         for subsystem in exec_order:
-            subsystem.shutdown()
+            try:
+                subsystem.shutdown()
+            except SubSystemError:
+                logging.exception("The subsystem <i>%s</i> did not shutdown "
+                                  "correctly." % subsystem.name)
+                had_error = True
+        return not had_error
