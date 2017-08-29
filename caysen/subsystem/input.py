@@ -3,7 +3,7 @@ Contains the implementation of the input framework using TDL.
 """
 import tdl
 
-from caysen.kernel import SubSystem
+from caysen.kernel import SubSystem, AppExitSignal
 
 
 class Action:
@@ -166,13 +166,12 @@ class InputSubSystem(SubSystem):
         return {"init": ["display"], "update": ["game"], "shutdown": ["game"]}
 
     def initialize(self, params, kernel):
-        return True
+        pass
 
     def shutdown(self):
-        return True
+        pass
 
     def update(self, delta_time):
         for event in tdl.event.get():
-            if event.type == 'Quit':
-                return False
-        return True
+            if event.type == 'QUIT':
+                raise AppExitSignal()

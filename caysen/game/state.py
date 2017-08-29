@@ -3,7 +3,7 @@
 """
 from abc import ABCMeta, abstractmethod
 
-from caysen.kernel import SubSystem
+from caysen.kernel import SubSystem, SubSystemError
 
 
 class GameState(metaclass=ABCMeta):
@@ -124,7 +124,8 @@ class GameStateStack:
     this might be useful in some circumstances but this project has nome such.
 
     Attributes:
-        stack (list): The current state stack represented as a list.
+        stack (list): The current state stack represented as a list, the last
+        element of which is the top-most game state.
         states (dict): A dictionary of game states associated by name.
     """
 
@@ -132,22 +133,51 @@ class GameStateStack:
         self.stack = list()
         self.states = dict()
 
-    def add(self, state, name=None):
+    def add(self, state, name=None, call_init=True):
         """
+        Adds the specified game state to this game state stack with the
+        specified alternate name before initializing it if necessary.
 
-        :param state:
-        :param name:
+        :param state: The game state to add.
+        :param name: An alternative name for the state; this allows two or
+        more game states of the same type to coexist in this game state stack.
         """
         if name is None:
             name = state.name
         self.states[name] = state
+        if call_init:
+            self.states[name].init(self)
 
     def dispose(self):
         """
         Releases all of the resources held
         """
+        self.stack.clear()
         for state in self.states.values():
             state.dispose()
+
+    def draw(self, canvas):
+        """
+        Draws every game state in this game state stack, starting with the
+        "bottom" or furtherest down.
+
+        Because this function draws from the bottom up, there is no way to
+        prevent parent game states from rendering themselves.  Technically,
+        it would be more in-line to mirror the "update" function and allow
+        top game states to determine whether or not those below them should
+        be drawn.  However, that places an obnoxious burden on all game
+        states to correctly know all contexts in which they will be used.  As
+        such, this project does not support that and instead all active game
+        states are given a chance to present themselves.
+
+        Finally, game states are drawn from the bottom up (as opposed to the
+        other way around in traditional 3D rendering systems due to alpha
+        and depth testing) because TDL does not support console layering.
+
+        :param canvas: The canvas to draw on.
+        """
+        for state in self.states:
+            state.draw(canvas)
 
     def pop(self, state):
         """
@@ -224,19 +254,33 @@ class GameStateStack:
 class GameSubSystem(SubSystem):
     """
 
+
+    Attributes:
+        canvas (Canvas):
+        stack (GameStateStack):
     """
 
     def __init__(self):
         super().__init__("game")
+        self.canvas = None
+        self.stack = GameStateStack()
 
     def get_dependencies(self):
-        return {"init": [], "update": [], "shutdown": []}
+        return {"init": ["display"], "update": [], "shutdown": []}
 
     def initialize(self, params, kernel):
-        return True
+        if not kernel.subsystems["display"]:
+            raise SubSystemError("Could not obtain a canvas; the display "
+                                 "subsystem has not been initialized or is "
+                                 "not present.")
+        self.canvas = kernel.subsystems["display"].canvas
 
     def shutdown(self):
-        return True
+        self.canvas = None
+        self.stack.dispose()
 
     def update(self, delta_time):
-        return True
+        self.stack.update(delta_time)
+        self.stack.draw(self.canvas)
+        if not self.stack:
+            pass

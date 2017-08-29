@@ -16,10 +16,10 @@ class AudioSubSystem(SubSystem):
         return {"init": [], "update": ["game"], "shutdown": []}
 
     def initialize(self, params, kernel):
-        return True
+        pass
 
     def shutdown(self):
-        return True
+        pass
 
     def update(self, delta_time):
-        return True
+        pass

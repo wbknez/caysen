@@ -3,7 +3,7 @@ Contains the implementation of the display framework using TDL.
 """
 import tdl
 
-from caysen.kernel import SubSystem
+from caysen.kernel import SubSystem, AppExitSignal
 
 
 class Canvas:
@@ -216,11 +216,11 @@ class DisplaySubSystem(SubSystem):
     def update(self, delta_time):
         self.root.blit(self.canvas.console, 0, 0, self.width, self.height, 0, 0)
         tdl.flush()
-        return not tdl.event.is_window_closed()
+        if tdl.event.is_window_closed():
+            raise AppExitSignal()
 
     def shutdown(self):
         self.canvas.dispose()
 
         if not self.root is None:
             del self.root
-        return True
